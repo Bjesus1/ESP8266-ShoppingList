@@ -1,6 +1,17 @@
 var http = require('http');
 var fs = require('fs');
- 
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: '',
+    database: 'shiftforward'
+});
+
+connection.connect();
+
 http.createServer(function (req, res) {
   // set up some routes
   switch(req.url) {
@@ -16,70 +27,85 @@ http.createServer(function (req, res) {
 
     case '/products':
  
-    if (req.method == 'POST') {
-      console.log("[200] " + req.method + " to " + req.url);
-        
-      req.on('data', function(chunk) {
-        console.log("Received body data:");
-        console.log(chunk.toString());
+      if (req.method == 'POST') {
+        console.log("[200] " + req.method + " to " + req.url);
+          
+        req.on('data', function(chunk) {
+          console.log("Received body data:");
+          console.log(chunk.toString());
 
-        fs.appendFile("C:/Users/Bruno/Documents/ShoppingList/products.txt", chunk.toString() + "\r\n", function(erroror) {
-          if(erroror) {
-              return console.log(erroror);
-          }
+          var post  = {name: chunk.toString().split('/r/n'), quantity: 1 };
+
+          connection.query('INSERT INTO products SET ?', post, function(err, result) {
+
+          });
 
           console.log("The file was saved!");
-        }); 
 
-      });
-      
-      req.on('end', function() {
-        // empty 200 OK response for now
-        res.writeHead(200, "OK", {'Content-Type': 'text/html'});
-        res.end();
-      });
-      
-    } else {
-      console.log("[405] " + req.method + " to " + req.url);
-      res.writeHead(405, "Method not supported", {'Content-Type': 'text/html'});
-      res.end('<html><head><title>405 - Method not supported</title></head><body><h1>Method not supported.</h1></body></html>');
-    }
+        });
+        
+        req.on('end', function() {
+          // empty 200 OK response for now
+          res.writeHead(200, "OK", {'Content-Type': 'text/html'});
+          res.end();
+        });
+        
+      } else {
+        console.log("[405] " + req.method + " to " + req.url);
+        res.writeHead(405, "Method not supported", {'Content-Type': 'text/html'});
+        res.end('<html><head><title>405 - Method not supported</title></head><body><h1>Method not supported.</h1></body></html>');
+      }
   
-  break;
+    break;
 
-  //Read the File using when the request is get
+    //Get info from database
+    case '/order':
 
-  case '/order':
- 
     if (req.method == 'GET') {
+      
+      var counter = 0;
+      var counter = [0,0,0,0,0];
+      var queryString = 'SELECT name FROM products';
       console.log("[200] " + req.method + " to " + req.url);
-        
-      fs.readFile('C:/Users/Bruno/Documents/ShoppingList/products.txt', function(error, data) {
-        if(error) throw error;
-        var array = data.toString().split("\r\n");
-        res.writeHead(200, "OK", {'Content-Type': 'text/html'});
-        res.write('<html><head><title>Hello</title></head><body>');
 
-        var product = {};
-        array.map( function (a) { if (a in product) product[a] ++; else product[a] = 1; } );
-        
-        res.write('<h1>Cookies=' + product["cookies"] + '</h1>'); 
-        res.write('<h1>water=' + product["water"] + '</h1>'); 
+      res.writeHead(200, "OK", {'Content-Type': 'text/html'});
+      res.write('<html><head><title>Shiftforward shopping list</title></head><body>');
+   
+      connection.query(queryString, function(err, rows, fields) {
+        if (err) throw err;
+         
+        for (var i in rows) {
+
+          switch(rows[i].name){
+
+            case rows[i].name = 'cookies':
+
+              console.log('name: ', rows[i].name);
+              counter[0]++;
+              console.log(counter[0]);
+              break;
+
+            default:
+              console.log(rows[i].name + " bad ");
+          }
+        }
+        res.write("<h1>Cookies: " + counter[0] + "</h1>");
         res.write('</form></body></html');
-        res.end();
       });
 
     } else {
+      
       console.log("[405] " + req.method + " to " + req.url);
       res.writeHead(405, "Method not supported", {'Content-Type': 'text/html'});
       res.end('<html><head><title>405 - Method not supported</title></head><body><h1>Method not supported.</h1></body></html>');
     }
   
-  break;
+    break;
 
     default:
       res.writeHead(404, "Not found", {'Content-Type': 'text/html'});
       res.end('<html><head><title>404 - Not found</title></head><body><h1>Not found.</h1></body></html>');
       console.log("[404] " + req.method + " to " + req.url);
   };
+
 }).listen(3020); 
