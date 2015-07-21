@@ -1,5 +1,5 @@
 # ESP8266-ShoppingList
-A button that adds products to a shopping list
+A button that adds products to a shopping list.
 
 ##How it works##
 
