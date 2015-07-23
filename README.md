@@ -55,3 +55,8 @@ The file named package.json has all the dependencies that our project need. To i
 You also need to install mysql. I recommend using **Xampp** for those who do not know how to work very well with DB.
 Open up Xampp control panel and activate the xampp and mysql services. 
 Insert on your browser `localhost/phpmyadmin` and import our database example.
+
+
+##Updates##
+
+*Reset button ( web )* - A button in our browser that deletes all the table's ( products ) data from our database.
