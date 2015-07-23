@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var mysql = require('mysql');
+var async = require("async");
 
 var connection = mysql.createConnection({
     host: 'localhost',
@@ -90,7 +91,10 @@ http.createServer(function (req, res) {
           }
         }
         res.write("<h1>Cookies: " + counter[0] + "</h1>");
-        res.write('</form></body></html');
+        res.write("<form action='/server.js'>");
+        res.write("<input type='hidden' name='reset' value='1'/>");
+        res.write("<button>Reset</button>");
+        res.write("</form></body></html");
       });
 
     } else {
@@ -101,6 +105,32 @@ http.createServer(function (req, res) {
     }
   
     break;
+
+
+    case '/server.js?reset=1':
+
+    if (req.method == 'GET') {
+
+      var sql_string = "DELETE FROM products;";
+      connection.query(sql_string, function(err, rows, fields) {
+      if (err) throw err;
+        console.log("deleted");
+      });
+
+      res.writeHead(200, "OK", {'Content-Type': 'text/html'});
+      res.write('<html><head><title>Shiftforward shopping list</title></head><body>');
+      res.write("<h1>Database is now empty</h1>");    
+      res.write("</body></html");
+
+    } else {
+      
+      console.log("[405] " + req.method + " to " + req.url);
+      res.writeHead(405, "Method not supported", {'Content-Type': 'text/html'});
+      res.end('<html><head><title>405 - Method not supported</title></head><body><h1>Method not supported.</h1></body></html>');
+    }
+
+    break;
+
 
     default:
       res.writeHead(404, "Not found", {'Content-Type': 'text/html'});
